@@ -29,7 +29,7 @@ Change `config/settings.php` according to your needs. If you change `db_table` v
 
 Create the `settings` table.
 
-    `php artisan migrate`
+    php artisan migrate
 
 # How to Use it?
 
