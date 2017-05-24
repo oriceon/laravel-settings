@@ -1,0 +1,38 @@
+{
+    "name": "oriceon/laravel-settings",
+    "description": "Laravel 5 persistent settings",
+    "keywords": [
+        "laravel",
+        "settings",
+        "persistent"
+    ],
+    "license": "GPL-3",
+    "authors": [
+        {
+            "name": "Valentin Ivașcu",
+        }
+    ],
+    "require": {
+        "php": ">=5.5.9",
+        "illuminate/support": "5.4.*",
+        "doctrine/dbal": "^2.5"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "6.0.7",
+        "illuminate/database": "5.4.*",
+        "illuminate/events": "5.4.*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Oriceon\\Settings\\": "src/"
+        },
+        "files": [
+            "src/helpers.php"
+        ]
+    },
+    "scripts": {
+        "test": [
+            "vendor/bin/phpunit"
+        ]
+    }
+}
