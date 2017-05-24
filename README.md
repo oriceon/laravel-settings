@@ -11,33 +11,25 @@ Laravel 5.4.x persistent settings using JSON cache file
 
 1. Require this package with composer :
 
-    $> composer require oriceon/laravel-settings
+    `composer require oriceon/laravel-settings`
 
 2. Register the ServiceProvider to the `providers` array in `config/app.php`
 
-    ...
-    
-    Oriceon\Settings\SettingsServiceProvider::class,
-    
-    ...
+    `Oriceon\Settings\SettingsServiceProvider::class,`
 
 3. Add an alias for the facade to `aliases` array in  your `config/app.php`
 
-    ...
-    
-    'Settings'  => Oriceon\Settings\Facades\Settings::class,
-    
-    ...
+    `'Settings'  => Oriceon\Settings\Facades\Settings::class,`
 
-4. Publish the config and migration files now :
+4. Publish the config and migration files now:
 
-    $> php artisan vendor:publish --provider="Oriceon\Settings\SettingsServiceProvider" --force
+    `php artisan vendor:publish --provider="Oriceon\Settings\SettingsServiceProvider" --force`
 
 Change `config/settings.php` according to your needs. If you change `db_table` var, don't forget to create a migration file to update the table as well.
 
 Create the `settings` table.
 
-    $> php artisan migrate
+    `php artisan migrate`
 
 # How to Use it?
 
