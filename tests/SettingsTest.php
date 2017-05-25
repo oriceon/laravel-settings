@@ -37,7 +37,7 @@ class SettingsTest extends TestCase
 
 		$this->config = [
 			'db_table'   => self::SETTINGS_TABLE,
-			'cache_file' => $this->settings_file(),
+			'cache_file' => settings_file(),
 			'fallback'   => false
 		];
 
@@ -150,7 +150,7 @@ class SettingsTest extends TestCase
         $this->assertTrue($this->settings->has('key1'));
         $this->assertFalse($this->settings->has('key2'));
 
-        @unlink($this->settings_file());
+        @unlink(settings_file());
 
         $this->assertTrue($this->settings->has('key1'));
         $this->assertFalse($this->settings->has('key2'));
@@ -185,7 +185,7 @@ class SettingsTest extends TestCase
 	protected function tearDown()
 	{
 		Capsule::schema()->drop(self::SETTINGS_TABLE);
-		@unlink($this->settings_file());
+		@unlink(settings_file());
 	}
 
 	/**
@@ -215,9 +215,4 @@ class SettingsTest extends TestCase
 		return $capsule->getDatabaseManager();
 	}
 
-
-    private function settings_file()
-    {
-        return dirname(__DIR__) . '/tests/settings.json';
-    }
 }

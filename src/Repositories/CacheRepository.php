@@ -2,6 +2,8 @@
 
 namespace Oriceon\Settings\Repositories;
 
+use Oriceon\Settings\Utils\Utils;
+
 class CacheRepository
 {
 	/**
@@ -42,7 +44,7 @@ class CacheRepository
 	 */
 	public function set($key, $value)
 	{
-        set_nested_array_value($this->settings, $key, $value);
+        Utils::set_nested_array_value($this->settings, $key, $value);
 
 		$this->store();
 
@@ -60,7 +62,7 @@ class CacheRepository
 	public function get($key, $default = null)
 	{
         $value = $this->settings;
-        $value = set_nested_array_value($value, $key);
+        $value = Utils::set_nested_array_value($value, $key);
 
         if ( ! is_null($value))
         {
@@ -96,7 +98,7 @@ class CacheRepository
 	 */
 	public function has($key)
 	{
-        return multi_key_exists(explode('.', $key), $this->settings);
+        return Utils::multi_key_exists(explode('.', $key), $this->settings);
 	}
 
     /**
@@ -108,7 +110,7 @@ class CacheRepository
      */
 	public function forget($key)
 	{
-        array_unset($this->settings, $key);
+        Utils::array_unset($this->settings, $key);
 
 		$this->store();
 	}

@@ -4,6 +4,7 @@ namespace Oriceon\Settings\Repositories;
 
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Support\Facades\Config;
+use Oriceon\Settings\Utils\Utils;
 
 class DatabaseRepository
 {
@@ -74,7 +75,7 @@ class DatabaseRepository
             if (count($newKeyExp) > 0)
             {
                 // we should compose a new array with keys from setter key
-                $newValue = build_array($newKeyExp, $value);
+                $newValue = Utils::build_array($newKeyExp, $value);
             }
 
 
@@ -87,7 +88,7 @@ class DatabaseRepository
         else
         {
             $setting_value = json_decode($row->setting_value, true);
-            set_nested_array_value($setting_value, $keyExp, $value);
+            Utils::set_nested_array_value($setting_value, $keyExp, $value);
 
             $this->database->table($this->config['db_table'])
                 ->where('setting_key', $keyExp[0])
@@ -196,7 +197,7 @@ class DatabaseRepository
 
             array_shift($keyExp);
 
-            return multi_key_exists($keyExp, $setting_value);
+            return Utils::multi_key_exists($keyExp, $setting_value);
         }
 
         return false;
@@ -226,7 +227,7 @@ class DatabaseRepository
             {
                 $setting_value = json_decode($row->setting_value, true);
 
-                array_unset($setting_value, $keyExp);
+                Utils::array_unset($setting_value, $keyExp);
 
                 $query->update([
                     'setting_value' => count($setting_value) ? json_encode($setting_value) : null
@@ -315,7 +316,7 @@ class DatabaseRepository
         if ( ! is_null($row))
         {
             $setting_value = json_decode($row->setting_value, true);
-            $value         = set_nested_array_value($setting_value, $keyExp);
+            $value         = Utils::set_nested_array_value($setting_value, $keyExp);
 
             return $this->cache->set($key, $value);
         }

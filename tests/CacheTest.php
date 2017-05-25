@@ -20,7 +20,7 @@ class CacheTest extends TestCase
      */
     protected function setUp()
     {
-        $this->cacheFile = $this->settings_file();
+        $this->cacheFile = settings_file();
         $this->cache     = new CacheRepository($this->cacheFile);
     }
 
@@ -121,12 +121,7 @@ class CacheTest extends TestCase
      */
     protected function tearDown()
     {
-        @unlink($this->settings_file());
+        @unlink(settings_file());
     }
 
-
-    private function settings_file()
-    {
-        return dirname(__DIR__) . '/tests/settings.json';
-    }
 }
