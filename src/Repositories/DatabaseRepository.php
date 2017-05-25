@@ -252,8 +252,8 @@ class DatabaseRepository
     {
         if ( ! empty($this->config['primary_config_file']))
         {
-            $default_settings = array_dot(Config::get($this->config['primary_config_file']));
-            $settings         = array_dot($this->getAll(false));
+            $default_settings = $this->array_dot(Config::get($this->config['primary_config_file']), true);
+            $settings         = $this->array_dot($this->getAll(false));
 
 
             if (array_key_exists('flush', $params) && $params['flush'] == true)
@@ -266,14 +266,15 @@ class DatabaseRepository
             }
             else
             {
+                // clean unused settings
                 foreach ($settings as $key => $value)
                 {
-                    // clean unused settings
                     if ( ! array_key_exists($key, $default_settings))
                     {
                         $this->forget($key);
                     }
                 }
+
 
                 $this->_update($default_settings, $settings);
             }
@@ -330,14 +331,45 @@ class DatabaseRepository
      */
     private function _update($default_settings, $settings)
     {
+        // update with new settings
         foreach ($default_settings as $key => $value)
         {
-            // update with new settings
             if ( ! array_key_exists($key, $settings))
             {
                 $this->set($key, $value);
             }
         }
+    }
+
+    private function array_dot(array $array, $default_settings = false)
+    {
+        $newArray = [];
+
+        $dots = array_dot($array);
+        foreach ($dots as $key => $value)
+        {
+            $expKey  = explode('.', $key);
+            $lastKey = array_last($expKey);
+
+            if (is_numeric($lastKey))
+            {
+                $newKey   = implode('.', array_slice($expKey, 0, -1));
+                $newValue = [];
+
+                if ($default_settings && ! empty($this->config['primary_config_file']))
+                {
+                    $newValue = Config::get($this->config['primary_config_file'] . '.' . $newKey, $newValue);
+                }
+
+                $newArray[$newKey] = $newValue;
+            }
+            else
+            {
+                $newArray[$key] = $value;
+            }
+        }
+
+        return $newArray;
     }
 
 }
