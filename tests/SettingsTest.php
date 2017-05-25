@@ -5,6 +5,7 @@ use Illuminate\Database\Capsule\Manager as Capsule;
 use Illuminate\Events\Dispatcher;
 use Oriceon\Settings\Repositories\DatabaseRepository;
 use Oriceon\Settings\Repositories\CacheRepository;
+use PHPUnit\Framework\TestCase;
 
 class SettingsTest extends TestCase
 {
