@@ -8,27 +8,27 @@ use Oriceon\Settings\Utils\Utils;
 
 class DatabaseRepository
 {
-	/**
-	 * Registry config
-	 *
-	 * @var array
-	 */
-	protected $config;
+    /**
+     * Registry config
+     *
+     * @var array
+     */
+    protected $config;
 
 
-	/**
-	 * Database manager instance
-	 *
-	 * @var \Illuminate\Database\DatabaseManager
-	 */
-	protected $database;
+    /**
+     * Database manager instance
+     *
+     * @var \Illuminate\Database\DatabaseManager
+     */
+    protected $database;
 
-	/**
-	 * Cache
-	 *
-	 * @var CacheRepository
-	 */
-	protected $cache;
+    /**
+     * Cache
+     *
+     * @var CacheRepository
+     */
+    protected $cache;
 
     /**
      * Constructor
@@ -37,16 +37,16 @@ class DatabaseRepository
      * @param CacheRepository $cache
      * @param array $config
      */
-	public function __construct(
-		DatabaseManager $database,
-		CacheRepository $cache,
-		$config = []
-	)
-	{
-		$this->database = $database;
-		$this->config   = $config;
-		$this->cache    = $cache;
-	}
+    public function __construct(
+        DatabaseManager $database,
+        CacheRepository $cache,
+        $config = []
+    )
+    {
+        $this->database = $database;
+        $this->config   = $config;
+        $this->cache    = $cache;
+    }
 
     /**
      * Store value into registry
@@ -103,31 +103,31 @@ class DatabaseRepository
         return $value;
     }
 
-	/**
-	 * Gets a value
-	 *
-	 * @param  string $key
-	 * @param  string $default
-	 *
-	 * @return mixed
-	 */
-	public function get($key, $default = null)
-	{
-		$value = $this->fetch($key);
+    /**
+     * Gets a value
+     *
+     * @param  string $key
+     * @param  string $default
+     *
+     * @return mixed
+     */
+    public function get($key, $default = null)
+    {
+        $value = $this->fetch($key);
 
-		if ( ! is_null($value))
-		{
-			return $value;
-		}
+        if ( ! is_null($value))
+        {
+            return $value;
+        }
 
-		if ($default != null)
-		{
-			return $default;
-		}
+        if ($default != null)
+        {
+            return $default;
+        }
 
-		if ($this->config['fallback'])
-		{
-		    if ( ! is_null($this->config['primary_config_file']))
+        if ($this->config['fallback'])
+        {
+            if ( ! is_null($this->config['primary_config_file']))
             {
                 $key2 = $this->config['primary_config_file'] . '.' . $key;
                 if (Config::has($key2))
@@ -136,11 +136,11 @@ class DatabaseRepository
                 }
             }
 
-			return Config::get($key, null);
-		}
+            return Config::get($key, null);
+        }
 
         return $default;
-	}
+    }
 
     /**
      * Fetch all values
@@ -203,25 +203,25 @@ class DatabaseRepository
         return false;
     }
 
-	/**
-	 * Remove a setting
-	 *
-	 * @param  string $key
-	 *
-	 * @return void
-	 */
-	public function forget($key)
-	{
+    /**
+     * Remove a setting
+     *
+     * @param  string $key
+     *
+     * @return void
+     */
+    public function forget($key)
+    {
         $keyExp = explode('.', $key);
 
 
-		$query = $this->database
+        $query = $this->database
             ->table($this->config['db_table'])
             ->where('setting_key', $keyExp[0]);
 
-		$row = $query->first(['setting_value']);
+        $row = $query->first(['setting_value']);
 
-		if ( ! is_null($row))
+        if ( ! is_null($row))
         {
             if (count($keyExp) > 1)
             {
@@ -240,8 +240,8 @@ class DatabaseRepository
         }
 
 
-		$this->cache->forget($key);
-	}
+        $this->cache->forget($key);
+    }
 
     /**
      * Clean unused settings
@@ -254,7 +254,6 @@ class DatabaseRepository
         {
             $default_settings = $this->array_dot(Config::get($this->config['primary_config_file']), true);
             $settings         = $this->array_dot($this->getAll(false));
-
 
             if (array_key_exists('flush', $params) && $params['flush'] == true)
             {
@@ -271,7 +270,10 @@ class DatabaseRepository
                 {
                     if ( ! array_key_exists($key, $default_settings))
                     {
-                        $this->forget($key);
+                        if ( ! $this->expect_array_as_a_value($key, $default_settings))
+                        {
+                            $this->forget($key);
+                        }
                     }
                 }
 
@@ -281,17 +283,17 @@ class DatabaseRepository
         }
     }
 
-	/**
-	 * Remove all settings
-	 *
-	 * @return bool
-	 */
-	public function flush()
-	{
-		$this->cache->flush();
+    /**
+     * Remove all settings
+     *
+     * @return bool
+     */
+    public function flush()
+    {
+        $this->cache->flush();
 
-		return $this->database->table($this->config['db_table'])->delete();
-	}
+        return $this->database->table($this->config['db_table'])->delete();
+    }
 
 
     /**
@@ -334,7 +336,7 @@ class DatabaseRepository
         // update with new settings
         foreach ($default_settings as $key => $value)
         {
-            if ( ! array_key_exists($key, $settings))
+            if ( ! $this->preg_key_exists($key, $settings))
             {
                 $this->set($key, $value);
             }
@@ -370,6 +372,47 @@ class DatabaseRepository
         }
 
         return $newArray;
+    }
+
+    private function expect_array_as_a_value($key, $default_settings)
+    {
+        $exp     = explode('.', $key);
+        $cnt_exp = count($exp) - 1;
+
+        // if found prev key
+        if (isset($exp[$cnt_exp - 1]))
+        {
+            // unset last key
+            unset($exp[$cnt_exp]);
+
+            // reconstruct dotted keys
+            $key = implode('.', $exp);
+
+            // if found path in default settings
+            // and path expect value as a array
+            // then we should NOT forget path from settings
+            if (array_key_exists($key, $default_settings) && is_array($default_settings[$key]))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function preg_key_exists($default_settings_key, array $settings)
+    {
+        $found = false;
+
+        foreach ($settings as $key => $value)
+        {
+            if (preg_match('/' . $default_settings_key . '/i', $key))
+            {
+                $found = true;
+            }
+        }
+
+        return $found;
     }
 
 }
