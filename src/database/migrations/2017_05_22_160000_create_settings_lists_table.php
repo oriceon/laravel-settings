@@ -19,7 +19,7 @@ class CreateSettingsListsTable extends Migration
 		Schema::create('settings__lists', function (Blueprint $table)
 		{
 			$table->string('setting_key')->index()->unique();
-			$table->json('setting_value')->nullable();
+			$table->binary('setting_value')->nullable();
 		});
 	}
 
