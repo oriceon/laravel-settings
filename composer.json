@@ -34,5 +34,15 @@
         "test": [
             "vendor/bin/phpunit"
         ]
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Oriceon\\Settings\\SettingsServiceProvider"
+            ],
+            "aliases": {
+                "Settings": "Oriceon\\Settings\\Facades\\Settings"
+            }
+        }
     }
 }
