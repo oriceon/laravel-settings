@@ -25,7 +25,7 @@ Laravel 5.4.x persistent settings using JSON cache file
 
     `php artisan vendor:publish --provider="Oriceon\Settings\SettingsServiceProvider" --force`
 
-Change `config/settings.php` according to your needs. If you change `db_table` var, don't forget to create a migration file to update the table as well.
+Change `config/settings.php` according to your needs.
 
 Create the `settings` table.
 
