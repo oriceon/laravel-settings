@@ -16,7 +16,7 @@ class CreateSettingsListsTable extends Migration
 	 */
 	public function up()
 	{
-		Schema::create('settings__lists', function (Blueprint $table)
+		Schema::create(config('settings.db_table'), function (Blueprint $table)
 		{
 			$table->string('setting_key')->index()->unique();
 			$table->binary('setting_value')->nullable();
@@ -31,7 +31,7 @@ class CreateSettingsListsTable extends Migration
 	 */
 	public function down()
 	{
-		Schema::dropIfExists('settings__lists');
+		Schema::dropIfExists(config('settings.db_table'));
 	}
 
 }
