@@ -16,8 +16,6 @@ return [
 	| Table name to store settings
 	|--------------------------------------------------------------------------
 	|
-	| Info: If you change this table name, dont forget to update your settings migrations file.
-	|
 	*/
 	'db_table' => 'settings__lists',
 
