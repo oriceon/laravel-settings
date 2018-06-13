@@ -43,7 +43,7 @@ class DatabaseRepository
         $config = []
     )
     {
-        $this->database = $database;
+        $this->database = $database->connection(config('settings.db_connection'));
         $this->config   = $config;
         $this->cache    = $cache;
     }

@@ -16,7 +16,7 @@ class CreateSettingsListsTable extends Migration
 	 */
 	public function up()
 	{
-		Schema::create(config('settings.db_table'), function (Blueprint $table)
+		Schema::connection(config('settings.db_connection'))->create(config('settings.db_table'), function (Blueprint $table)
 		{
 			$table->string('setting_key')->index()->unique();
 			$table->binary('setting_value')->nullable();
