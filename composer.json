@@ -6,7 +6,7 @@
         "settings",
         "persistent"
     ],
-    "license": "GPL-3",
+    "license": "MIT",
     "authors": [
         {
             "name": "Valentin Ivașcu"
