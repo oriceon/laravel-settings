@@ -9,68 +9,79 @@ use PHPUnit\Framework\TestCase;
 
 class SettingsTest extends TestCase
 {
-	const SETTINGS_TABLE   = 'settings__lists';
-	const SETTINGS_COL_KEY = 'setting_key';
-	const SETTINGS_COL_VAL = 'setting_value';
+    const SETTINGS_CONNECTION = '';
+    const SETTINGS_TABLE      = 'settings__lists';
+    const SETTINGS_COL_KEY    = 'setting_key';
+    const SETTINGS_COL_VAL    = 'setting_value';
 
-	/**
-	 * @var
-	 */
-	protected $settings;
+    /**
+     * @var
+     */
+    protected $cacheFile;
 
-	/**
-	 * @var
-	 */
-	protected $db;
+    /**
+     * @var
+     */
+    protected $settings;
 
-	/**
-	 * @var
-	 */
-	protected $config;
+    /**
+     * @var
+     */
+    protected $db;
 
-	/**
-	 *
-	 */
-	protected function setUp()
-	{
-		$this->db = $this->initDb();
+    /**
+     * @var
+     */
+    protected $config;
 
-		$this->config = [
-			'db_table'   => self::SETTINGS_TABLE,
-			'cache_file' => settings_file(),
-			'fallback'   => false
-		];
+    /**
+     *
+     */
+    protected function setUp()
+    {
+        parent::setUp();
 
-		$this->settings = new DatabaseRepository(
-			$this->db,
-			new CacheRepository($this->config['cache_file']),
-			$this->config
-		);
-	}
+        $this->cacheFile = __DIR__ . DIRECTORY_SEPARATOR . 'settings.json';
 
-	/**
-	 *
-	 */
-	public function testSetByOneKey()
-	{
+        $this->db = $this->initDb();
+
+        $this->config = [
+            'db_connection' => self::SETTINGS_CONNECTION,
+            'db_table'      => self::SETTINGS_TABLE,
+            'cache_file'    => $this->cacheFile,
+            'fallback'      => false
+        ];
+
+        $this->settings = new DatabaseRepository(
+            $this->db,
+            new CacheRepository($this->config['cache_file']),
+            $this->config
+        );
+    }
+
+    /**
+     *
+     */
+    public function test_set_one_normal_key()
+    {
         $key   = 'key';
         $value = 'value';
 
         $this->settings->set($key, $value);
 
 
-		$row = $this->db->table(self::SETTINGS_TABLE)
+        $row = $this->db->table(self::SETTINGS_TABLE)
             ->where(self::SETTINGS_COL_KEY, $key)
             ->first([self::SETTINGS_COL_VAL]);
 
-		$this->assertEquals($value, json_decode($row->{self::SETTINGS_COL_VAL}, true));
-		$this->assertEquals($value, $this->settings->get('key'));
-	}
+        $this->assertEquals($value, json_decode($row->{self::SETTINGS_COL_VAL}, true));
+        $this->assertEquals($value, $this->settings->get('key'));
+    }
 
     /**
      *
      */
-    public function testSetByDotKey()
+    public function test_set_a_dot_key()
     {
         $value = 'value';
 
@@ -88,9 +99,9 @@ class SettingsTest extends TestCase
     /**
      *
      */
-    public function testSetArrayAsAValue()
+    public function test_set_array_as_a_value()
     {
-        $value = ['key' => 'value'];
+        $value = ['array_key' => 'array_value'];
 
         $this->settings->set('key', $value);
 
@@ -106,7 +117,7 @@ class SettingsTest extends TestCase
     /**
      *
      */
-    public function testGet()
+    public function test_get_key()
     {
         $key   = 'key';
         $value = 'value';
@@ -119,7 +130,7 @@ class SettingsTest extends TestCase
     /**
      *
      */
-    public function testGetAll()
+    public function test_get_all()
     {
         $this->settings->set('key1', 'value1');
         $this->settings->set('key2', 'value2');
@@ -132,7 +143,7 @@ class SettingsTest extends TestCase
     /**
      *
      */
-    public function testHasKey()
+    public function test_has_key()
     {
         $this->settings->set('key1', 'value1');
 
@@ -143,14 +154,14 @@ class SettingsTest extends TestCase
     /**
      *
      */
-    public function testHasKeyWithoutCache()
+    public function test_has_key_without_cache()
     {
         $this->settings->set('key1', 'value1');
 
         $this->assertTrue($this->settings->has('key1'));
         $this->assertFalse($this->settings->has('key2'));
 
-        @unlink(settings_file());
+        @unlink($this->cacheFile);
 
         $this->assertTrue($this->settings->has('key1'));
         $this->assertFalse($this->settings->has('key2'));
@@ -159,7 +170,7 @@ class SettingsTest extends TestCase
     /**
      *
      */
-    public function testForget()
+    public function test_forget()
     {
         $this->settings->set('key', 'value');
         $this->settings->forget('key');
@@ -170,7 +181,7 @@ class SettingsTest extends TestCase
     /**
      *
      */
-    public function testFlush()
+    public function test_flush()
     {
         $this->settings->set('key', 'value');
         $this->settings->flush();
@@ -179,40 +190,42 @@ class SettingsTest extends TestCase
     }
 
 
-	/**
-	 *
-	 */
-	protected function tearDown()
-	{
-		Capsule::schema()->drop(self::SETTINGS_TABLE);
-		@unlink(settings_file());
-	}
+    /**
+     *
+     */
+    protected function tearDown()
+    {
+        parent::tearDown();
 
-	/**
-	 * @return \Illuminate\Database\DatabaseManager
-	 */
-	private function initDb()
-	{
-		$capsule = new Capsule;
+        Capsule::schema()->drop(self::SETTINGS_TABLE);
+        @unlink($this->cacheFile);
+    }
 
-		$capsule->addConnection([
-			'driver'   => 'sqlite',
-			'host'     => 'localhost',
-			'database' => ':memory:',
-			'prefix'   => '',
-		]);
+    /**
+     * @return \Illuminate\Database\DatabaseManager
+     */
+    private function initDb()
+    {
+        $capsule = new Capsule;
 
-		$capsule->setEventDispatcher(new Dispatcher(new Container));
-		$capsule->setAsGlobal();
-		$capsule->bootEloquent();
+        $capsule->addConnection([
+            'driver'   => 'sqlite',
+            'host'     => 'localhost',
+            'database' => ':memory:',
+            'prefix'   => '',
+        ]);
 
-		Capsule::schema()->create(self::SETTINGS_TABLE, function ($table)
-		{
-			$table->string(self::SETTINGS_COL_KEY)->index()->unique();
-			$table->json(self::SETTINGS_COL_VAL)->nullable();
-		});
+        $capsule->setEventDispatcher(new Dispatcher(new Container));
+        $capsule->setAsGlobal();
+        $capsule->bootEloquent();
 
-		return $capsule->getDatabaseManager();
-	}
+        Capsule::schema()->create(self::SETTINGS_TABLE, function ($table)
+        {
+            $table->string(self::SETTINGS_COL_KEY)->index()->unique();
+            $table->json(self::SETTINGS_COL_VAL)->nullable();
+        });
+
+        return $capsule->getDatabaseManager();
+    }
 
 }

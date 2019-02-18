@@ -8,20 +8,25 @@ class CacheTest extends TestCase
     /**
      * @var
      */
-    protected $cache;
+    protected $cacheFile;
 
     /**
      * @var
      */
-    protected $cacheFile;
+    protected $cache;
 
     /**
      *
      */
     protected function setUp()
     {
-        $this->cacheFile = settings_file();
-        $this->cache     = new CacheRepository($this->cacheFile);
+        parent::setUp();
+
+        $this->cacheFile = __DIR__ . DIRECTORY_SEPARATOR . 'settings.json';
+
+        file_put_contents($this->cacheFile, '{}');
+
+        $this->cache = new CacheRepository($this->cacheFile);
     }
 
     /**
@@ -121,7 +126,9 @@ class CacheTest extends TestCase
      */
     protected function tearDown()
     {
-        @unlink(settings_file());
+        parent::tearDown();
+
+        @unlink($this->cacheFile);
     }
 
 }

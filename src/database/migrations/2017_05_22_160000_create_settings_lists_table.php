@@ -8,7 +8,6 @@ use Illuminate\Database\Schema\Blueprint;
  */
 class CreateSettingsListsTable extends Migration
 {
-
 	/**
 	 * Run the migrations.
 	 *
@@ -22,7 +21,6 @@ class CreateSettingsListsTable extends Migration
 			$table->binary('setting_value')->nullable();
 		});
 	}
-
 
 	/**
 	 * Reverse the migrations.

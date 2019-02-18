@@ -3,6 +3,7 @@
 namespace Oriceon\Settings\Repositories;
 
 use Illuminate\Database\DatabaseManager;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Config;
 use Oriceon\Settings\Utils\Utils;
 
@@ -14,7 +15,6 @@ class DatabaseRepository
      * @var array
      */
     protected $config;
-
 
     /**
      * Database manager instance
@@ -43,7 +43,7 @@ class DatabaseRepository
         $config = []
     )
     {
-        $this->database = $database->connection(config('settings.db_connection'));
+        $this->database = $database->connection($config['db_connection']);
         $this->config   = $config;
         $this->cache    = $cache;
     }
@@ -252,8 +252,8 @@ class DatabaseRepository
     {
         if ( ! empty($this->config['primary_config_file']))
         {
-            $default_settings = $this->array_dot(Config::get($this->config['primary_config_file']), true);
-            $settings         = $this->array_dot($this->getAll(false));
+            $default_settings = Arr::dot(Config::get($this->config['primary_config_file']));
+            $settings         = Arr::dot($this->getAll(false));
 
             if (array_key_exists('flush', $params) && $params['flush'] == true)
             {
@@ -270,7 +270,7 @@ class DatabaseRepository
                 {
                     if ( ! array_key_exists($key, $default_settings))
                     {
-                        if ( ! $this->expect_array_as_a_value($key, $default_settings))
+                        if ( ! $this->key_represents_an_array($key, $default_settings))
                         {
                             $this->forget($key);
                         }
@@ -343,55 +343,16 @@ class DatabaseRepository
         }
     }
 
-    private function array_dot(array $array, $default_settings = false)
+
+    private function key_represents_an_array($key, $default_settings)
     {
-        $newArray = [];
+        $split_key = preg_split('/\.([0-9]+)\.?/i', $key);
 
-        $dots = array_dot($array);
-        foreach ($dots as $key => $value)
+        // key represents an array or a multi array ?
+        if (count($split_key) > 0)
         {
-            $expKey  = explode('.', $key);
-            $lastKey = array_last($expKey);
-
-            if (is_numeric($lastKey))
-            {
-                $newKey   = implode('.', array_slice($expKey, 0, -1));
-                $newValue = [];
-
-                if ($default_settings && ! empty($this->config['primary_config_file']))
-                {
-                    $newValue = Config::get($this->config['primary_config_file'] . '.' . $newKey, $newValue);
-                }
-
-                $newArray[$newKey] = $newValue;
-            }
-            else
-            {
-                $newArray[$key] = $value;
-            }
-        }
-
-        return $newArray;
-    }
-
-    private function expect_array_as_a_value($key, $default_settings)
-    {
-        $exp     = explode('.', $key);
-        $cnt_exp = count($exp) - 1;
-
-        // if found prev key
-        if (isset($exp[$cnt_exp - 1]))
-        {
-            // unset last key
-            unset($exp[$cnt_exp]);
-
-            // reconstruct dotted keys
-            $key = implode('.', $exp);
-
-            // if found path in default settings
-            // and path expect value as a array
-            // then we should NOT forget path from settings
-            if (array_key_exists($key, $default_settings) && is_array($default_settings[$key]))
+            // but that array still exists in default settings ?
+            if ($this->preg_key_exists($split_key[0], $default_settings))
             {
                 return true;
             }
