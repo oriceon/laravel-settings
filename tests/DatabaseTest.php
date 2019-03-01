@@ -7,7 +7,7 @@ use Oriceon\Settings\Repositories\DatabaseRepository;
 use Oriceon\Settings\Repositories\CacheRepository;
 use PHPUnit\Framework\TestCase;
 
-class SettingsTest extends TestCase
+class DatabaseTest extends TestCase
 {
     const SETTINGS_CONNECTION = '';
     const SETTINGS_TABLE      = 'settings__lists';
@@ -59,10 +59,8 @@ class SettingsTest extends TestCase
         );
     }
 
-    /**
-     *
-     */
-    public function test_set_one_normal_key()
+    /** @test */
+    public function set_one_key()
     {
         $key   = 'key';
         $value = 'value';
@@ -78,10 +76,8 @@ class SettingsTest extends TestCase
         $this->assertEquals($value, $this->settings->get('key'));
     }
 
-    /**
-     *
-     */
-    public function test_set_a_dot_key()
+    /** @test */
+    public function set_a_dot_key()
     {
         $value = 'value';
 
@@ -96,10 +92,8 @@ class SettingsTest extends TestCase
         $this->assertEquals($value, $this->settings->get('key1.key2'));
     }
 
-    /**
-     *
-     */
-    public function test_set_array_as_a_value()
+    /** @test */
+    public function set_array_as_a_value()
     {
         $value = ['array_key' => 'array_value'];
 
@@ -114,10 +108,8 @@ class SettingsTest extends TestCase
         $this->assertEquals($value, $this->settings->get('key'));
     }
 
-    /**
-     *
-     */
-    public function test_get_key()
+    /** @test */
+    public function get_key()
     {
         $key   = 'key';
         $value = 'value';
@@ -127,10 +119,8 @@ class SettingsTest extends TestCase
         $this->assertEquals($value, $this->settings->get($key));
     }
 
-    /**
-     *
-     */
-    public function test_get_all()
+    /** @test */
+    public function get_all_keys()
     {
         $this->settings->set('key1', 'value1');
         $this->settings->set('key2', 'value2');
@@ -140,10 +130,8 @@ class SettingsTest extends TestCase
         $this->assertEquals(['key1' => 'value1', 'key2' => 'value2'], $this->settings->getAll());
     }
 
-    /**
-     *
-     */
-    public function test_has_key()
+    /** @test */
+    public function has_key()
     {
         $this->settings->set('key1', 'value1');
 
@@ -151,10 +139,8 @@ class SettingsTest extends TestCase
         $this->assertFalse($this->settings->has('key2'));
     }
 
-    /**
-     *
-     */
-    public function test_has_key_without_cache()
+    /** @test */
+    public function has_key_without_cache()
     {
         $this->settings->set('key1', 'value1');
 
@@ -167,10 +153,8 @@ class SettingsTest extends TestCase
         $this->assertFalse($this->settings->has('key2'));
     }
 
-    /**
-     *
-     */
-    public function test_forget()
+    /** @test */
+    public function forget_key()
     {
         $this->settings->set('key', 'value');
         $this->settings->forget('key');
@@ -178,10 +162,8 @@ class SettingsTest extends TestCase
         $this->assertNull($this->settings->get('key'));
     }
 
-    /**
-     *
-     */
-    public function test_flush()
+    /** @test */
+    public function flush()
     {
         $this->settings->set('key', 'value');
         $this->settings->flush();

@@ -5,7 +5,6 @@ namespace Oriceon\Settings\Repositories;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Config;
-use Oriceon\Settings\Utils\Utils;
 
 class DatabaseRepository
 {
@@ -75,7 +74,7 @@ class DatabaseRepository
             if (count($newKeyExp) > 0)
             {
                 // we should compose a new array with keys from setter key
-                $newValue = Utils::build_array($newKeyExp, $value);
+                $newValue = build_array($newKeyExp, $value);
             }
 
 
@@ -88,7 +87,7 @@ class DatabaseRepository
         else
         {
             $setting_value = json_decode($row->setting_value, true);
-            Utils::set_nested_array_value($setting_value, $keyExp, $value);
+            set_nested_array_value($setting_value, $keyExp, $value);
 
             $this->database->table($this->config['db_table'])
                 ->where('setting_key', $keyExp[0])
@@ -197,14 +196,14 @@ class DatabaseRepository
 
             array_shift($keyExp);
 
-            return Utils::multi_key_exists($keyExp, $setting_value);
+            return multi_key_exists($keyExp, $setting_value);
         }
 
         return false;
     }
 
     /**
-     * Remove a setting
+     * Remove a settings from database and cache file
      *
      * @param  string $key
      *
@@ -214,7 +213,7 @@ class DatabaseRepository
     {
         $keyExp = explode('.', $key);
 
-
+        // get settings value by first key name
         $query = $this->database
             ->table($this->config['db_table'])
             ->where('setting_key', $keyExp[0]);
@@ -225,26 +224,38 @@ class DatabaseRepository
         {
             if (count($keyExp) > 1)
             {
+                // if found more keys, then forget last key from array
                 $setting_value = json_decode($row->setting_value, true);
 
-                Utils::array_unset($setting_value, $keyExp);
+                unset($keyExp[0]);
+                $newKey = implode('.', $keyExp);
 
-                $query->update([
-                    'setting_value' => count($setting_value) ? json_encode($setting_value) : null
-                ]);
+                Arr::forget($setting_value, $newKey);
+
+
+                if (count($setting_value) > 0)
+                {
+                    // if we still have settings, update settings row
+                    $query->update(['setting_value' => json_encode($setting_value)]);
+                }
+                else
+                {
+                    // if settings value remain blank, delete settings row
+                    $query->delete();
+                }
             }
             else
             {
+                // if found only one key, delete settings row
                 $query->delete();
             }
         }
-
 
         $this->cache->forget($key);
     }
 
     /**
-     * Clean unused settings
+     * Cleans settings that are no longer used in primary config file
      *
      * @param $params
      */
@@ -253,32 +264,40 @@ class DatabaseRepository
         if ( ! empty($this->config['primary_config_file']))
         {
             $default_settings = Arr::dot(Config::get($this->config['primary_config_file']));
-            $settings         = Arr::dot($this->getAll(false));
+            $saved_settings   = Arr::dot($this->getAll($cache = false));
 
             if (array_key_exists('flush', $params) && $params['flush'] == true)
             {
                 $this->flush();
 
-                $settings = [];
-
-                $this->_update($default_settings, $settings);
+                $saved_settings = [];
             }
             else
             {
-                // clean unused settings
-                foreach ($settings as $key => $value)
+                foreach ($saved_settings as $key => $value)
                 {
                     if ( ! array_key_exists($key, $default_settings))
                     {
-                        if ( ! $this->key_represents_an_array($key, $default_settings))
+                        if ( ! key_represents_an_array($key, $default_settings))
                         {
                             $this->forget($key);
                         }
                     }
                 }
+            }
 
 
-                $this->_update($default_settings, $settings);
+            // update with new settings
+            foreach ($default_settings as $key => $value)
+            {
+                if ( ! preg_key_exists($key, $saved_settings))
+                {
+                    // check if key does not represents an array and exists in saved settings
+                    if ( ! key_represents_an_array($key, $saved_settings))
+                    {
+                        $this->set($key, $value);
+                    }
+                }
             }
         }
     }
@@ -319,61 +338,12 @@ class DatabaseRepository
         if ( ! is_null($row))
         {
             $setting_value = json_decode($row->setting_value, true);
-            $value         = Utils::set_nested_array_value($setting_value, $keyExp);
+            $value         = set_nested_array_value($setting_value, $keyExp);
 
             return $this->cache->set($key, $value);
         }
 
         return null;
-    }
-
-    /**
-     * @param $default_settings
-     * @param $settings
-     */
-    private function _update($default_settings, $settings)
-    {
-        // update with new settings
-        foreach ($default_settings as $key => $value)
-        {
-            if ( ! $this->preg_key_exists($key, $settings))
-            {
-                $this->set($key, $value);
-            }
-        }
-    }
-
-
-    private function key_represents_an_array($key, $default_settings)
-    {
-        $split_key = preg_split('/\.([0-9]+)\.?/i', $key);
-
-        // key represents an array or a multi array ?
-        if (count($split_key) > 0)
-        {
-            // but that array still exists in default settings ?
-            if ($this->preg_key_exists($split_key[0], $default_settings))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private function preg_key_exists($default_settings_key, array $settings)
-    {
-        $found = false;
-
-        foreach ($settings as $key => $value)
-        {
-            if (preg_match('/' . $default_settings_key . '/i', $key))
-            {
-                $found = true;
-            }
-        }
-
-        return $found;
     }
 
 }

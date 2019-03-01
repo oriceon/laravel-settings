@@ -29,10 +29,8 @@ class CacheTest extends TestCase
         $this->cache = new CacheRepository($this->cacheFile);
     }
 
-    /**
-     *
-     */
-    public function testSetByOneKey()
+    /** @test */
+    public function set_one_key()
     {
         $this->cache->set('key', 'value');
 
@@ -41,10 +39,8 @@ class CacheTest extends TestCase
         $this->assertEquals('{"key":"value"}', $contents);
     }
 
-    /**
-     *
-     */
-    public function testSetByDotKey()
+    /** @test */
+    public function set_dot_key()
     {
         $this->cache->set('key1.key2', 'value');
 
@@ -53,10 +49,8 @@ class CacheTest extends TestCase
         $this->assertEquals('{"key1":{"key2":"value"}}', $contents);
     }
 
-    /**
-     *
-     */
-    public function testSetArray()
+    /** @test */
+    public function set_array()
     {
         $set = ['value1' => 1, 'value2' => 2];
         $this->cache->set('key', $set);
@@ -67,20 +61,16 @@ class CacheTest extends TestCase
         $this->assertEquals($this->cache->get('key'), $set);
     }
 
-    /**
-     *
-     */
-    public function testGet()
+    /** @test */
+    public function get_key()
     {
         $this->cache->set('key', 'value');
 
         $this->assertEquals('value', $this->cache->get('key'));
     }
 
-    /**
-     *
-     */
-    public function testGetAll()
+    /** @test */
+    public function get_all_keys()
     {
         $this->cache->set('key1', 'value1');
         $this->cache->set('key2', 'value2');
@@ -88,20 +78,16 @@ class CacheTest extends TestCase
         $this->assertEquals(['key1' => 'value1', 'key2' => 'value2'], $this->cache->getAll());
     }
 
-    /**
-     *
-     */
-    public function testHasKey()
+    /** @test */
+    public function has_key()
     {
         $this->cache->set('key', 'value');
 
         $this->assertTrue($this->cache->has('key'));
     }
 
-    /**
-     *
-     */
-    public function testForget()
+    /** @test */
+    public function forget_key()
     {
         $this->cache->set('key', 'value');
         $this->cache->forget('key');
@@ -109,10 +95,8 @@ class CacheTest extends TestCase
         $this->assertNull($this->cache->get('key'));
     }
 
-    /**
-     *
-     */
-    public function testFlush()
+    /** @test */
+    public function flush()
     {
         $this->cache->set('key', 'value');
         $this->cache->flush();

@@ -8,7 +8,6 @@ use Oriceon\Settings\Repositories\DatabaseRepository;
 
 class SettingsServiceProvider extends ServiceProvider
 {
-
 	/**
 	 * Indicates if loading of the provider is deferred.
 	 *
@@ -39,9 +38,7 @@ class SettingsServiceProvider extends ServiceProvider
 	 */
 	public function register()
 	{
-		$this->mergeConfigFrom(
-			__DIR__ . '/config/settings.php', 'settings'
-		);
+		$this->mergeConfigFrom(__DIR__ . '/config/settings.php', 'settings');
 
 		$this->app->singleton('settings', function ($app)
 		{
@@ -54,7 +51,6 @@ class SettingsServiceProvider extends ServiceProvider
 			);
 		});
 	}
-
 
 	/**
 	 * Get the services provided by the provider.

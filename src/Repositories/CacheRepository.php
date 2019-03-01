@@ -2,7 +2,7 @@
 
 namespace Oriceon\Settings\Repositories;
 
-use Oriceon\Settings\Utils\Utils;
+use Illuminate\Support\Arr;
 
 class CacheRepository
 {
@@ -20,19 +20,18 @@ class CacheRepository
 	 */
 	protected $settings;
 
-
-	/**
-	 * Constructor
-	 *
-	 * @param string $cacheFile
-	 */
+    /**
+     * Constructor
+     *
+     * @param string $cacheFile
+     */
 	public function __construct($cacheFile)
 	{
 		$this->cacheFile = $cacheFile;
 		$this->checkCacheFile();
 
-		$this->settings = $this->getAll();
-	}
+        $this->settings = $this->getAll();
+    }
 
 	/**
 	 * Sets a value
@@ -44,7 +43,7 @@ class CacheRepository
 	 */
 	public function set($key, $value)
 	{
-        Utils::set_nested_array_value($this->settings, $key, $value);
+        set_nested_array_value($this->settings, $key, $value);
 
 		$this->store();
 
@@ -62,7 +61,7 @@ class CacheRepository
 	public function get($key, $default = null)
 	{
         $value = $this->settings;
-        $value = Utils::set_nested_array_value($value, $key);
+        $value = set_nested_array_value($value, $key);
 
         if ( ! is_null($value))
         {
@@ -98,7 +97,7 @@ class CacheRepository
 	 */
 	public function has($key)
 	{
-        return Utils::multi_key_exists(explode('.', $key), $this->settings);
+        return multi_key_exists(explode('.', $key), $this->settings);
 	}
 
     /**
@@ -110,7 +109,7 @@ class CacheRepository
      */
 	public function forget($key)
 	{
-        Utils::array_unset($this->settings, $key);
+        Arr::forget($this->settings, $key);
 
 		$this->store();
 	}
@@ -122,7 +121,7 @@ class CacheRepository
 	 */
 	public function flush()
 	{
-		file_put_contents($this->cacheFile, json_encode([]));
+        file_put_contents($this->cacheFile, json_encode([]));
 	}
 
 
