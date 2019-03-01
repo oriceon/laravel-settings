@@ -28,8 +28,7 @@
             "Oriceon\\Settings\\": "src/"
         },
         "files": [
-            "src/helpers.php",
-            "Utils/Utils.php"
+            "src/helpers.php"
         ]
     },
     "scripts": {
